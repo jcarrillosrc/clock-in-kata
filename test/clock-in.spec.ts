@@ -25,16 +25,17 @@ describe('time tracking', () => {
         });
 
         it('should reject operation due async operation fails', () => {
+            const expectedError = new Error("Cannot store clock-in record")
             const clockInRepository = new ClockInApiRepository()
             const clockInRepositoryStub = stubObject<ClockInRepository>(clockInRepository)
-            clockInRepositoryStub.invoke.returns(Promise.reject())
+            clockInRepositoryStub.invoke.returns(Promise.reject(expectedError))
 
             const command = new RegisterClockInCommand()
             const handler = new RegisterClockInCommandHandler(
                 clockInRepositoryStub
             )
 
-            return handler.invoke(command).should.be.rejected
+            return handler.invoke(command).should.be.rejectedWith(expectedError.message)
         });
     })
 
@@ -86,7 +87,7 @@ describe('time tracking', () => {
                 gpsApiRepositoryStub
             )
 
-            return handler.invoke(command).should.be.rejected
+            return handler.invoke(command).should.be.rejectedWith("Not available GPS position")
         });
 
         it('should send clock-in with required GPS data after few rejected GPS service calls', () => {
@@ -118,7 +119,7 @@ describe('time tracking', () => {
                 gpsApiRepositoryStub
             )
 
-            return handler.invoke(command).should.be.rejected
+            return handler.invoke(command).should.be.rejectedWith("Not available GPS position")
         });
     });
 });
