@@ -8,6 +8,7 @@ import {stubObject} from "ts-sinon";
 import {GpsApiRepository} from "@/infrastructure/GpsApiRepository";
 import {GpsRepository} from "@/domain/GpsRepository";
 import {TestGpsApiRepository} from "./TestGpsApiRepository";
+import {RegisterClockInResponse} from "@/application/RegisterClockInResponse";
 
 chai.use(chaiAsPromised);
 chai.should()
@@ -20,7 +21,7 @@ describe('time tracking', () => {
                 new ClockInApiRepository()
             )
 
-            return handler.invoke(command).should.be.fulfilled
+            return handler.invoke(command).should.be.become(new RegisterClockInResponse(true, []))
         });
 
         it('should reject operation due async operation fails', () => {
@@ -46,7 +47,7 @@ describe('time tracking', () => {
                 new GpsApiRepository()
             )
 
-            return handler.invoke(command).should.be.fulfilled
+            return handler.invoke(command).should.be.become(new RegisterClockInResponse(true, []))
         });
 
         it('should send clock-in without GPS data due GPS service is not available', () => {
@@ -60,7 +61,11 @@ describe('time tracking', () => {
                 gpsApiRepositoryStub
             )
 
-            return handler.invoke(command).should.be.fulfilled
+            const expectedResponse = new RegisterClockInResponse(true, [
+                "GPS position is not available"
+            ])
+
+            return handler.invoke(command).should.be.become(expectedResponse)
         });
     });
 
@@ -72,7 +77,8 @@ describe('time tracking', () => {
                 new GpsApiRepository()
             )
 
-            return handler.invoke(command).should.be.fulfilled
+            const expectedResponse = new RegisterClockInResponse(true, [])
+            return handler.invoke(command).should.be.become(expectedResponse)
         });
 
         it('should reject operation due GPS service is not available', () => {
@@ -102,7 +108,8 @@ describe('time tracking', () => {
                 gpsApiRepositoryStub
             )
 
-            return handler.invoke(command).should.be.fulfilled
+            const expectedResponse = new RegisterClockInResponse(true, [])
+            return handler.invoke(command).should.be.become(expectedResponse)
         });
 
         it('should reject operation due GPS is not available after few retries', () => {

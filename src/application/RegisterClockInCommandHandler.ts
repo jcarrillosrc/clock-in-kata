@@ -2,6 +2,7 @@ import {ClockInRepository} from "@/domain/ClockInRepository";
 import {RegisterClockInCommand} from "@/application/RegisterClockInCommand";
 import {GpsRepository} from "@/domain/GpsRepository";
 import {GpsPosition} from "@/domain/GpsPosition";
+import {RegisterClockInResponse} from "@/application/RegisterClockInResponse";
 
 export class RegisterClockInCommandHandler {
     constructor(
@@ -10,18 +11,17 @@ export class RegisterClockInCommandHandler {
     ) {
     }
 
-    async invoke(command: RegisterClockInCommand): Promise<void> {
-        const gpsPosition = await new Promise<GpsPosition | undefined>((resolve, reject) => {
-            if(undefined === this.gpsRepository) {
-                if( true === command.requiredPosition ){
-                    reject(new Error("Undefined GPS client for required GPS position configuration"))
-                    return
-                }
-
-                resolve(undefined)
-                return
+    async invoke(command: RegisterClockInCommand): Promise<RegisterClockInResponse> {
+        if(undefined === this.gpsRepository) {
+            if( true === command.requiredPosition ){
+                throw new Error("Undefined GPS client for required GPS position configuration")
             }
 
+            await this.apiClient.invoke()
+            return new RegisterClockInResponse(true, [])
+        }
+
+        const gpsPosition = await new Promise<GpsPosition | undefined>((resolve, reject) => {
             this.gpsRepository?.invoke()
                 .then(resolve)
                 .catch(() => {
@@ -30,11 +30,12 @@ export class RegisterClockInCommandHandler {
                         return
                     }
 
-                    console.warn("GPS position is not available")
                     resolve(undefined)
                 })
         })
 
-        return this.apiClient.invoke(gpsPosition)
+        const clockInRecord = await this.apiClient.invoke(gpsPosition)
+
+        return RegisterClockInResponse.fomClockInRecord(clockInRecord)
     }
 }
