@@ -1,4 +1,3 @@
-import assert from 'assert';
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {RegisterClockInCommandHandler} from "@/application/RegisterClockInCommandHandler";
