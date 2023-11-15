@@ -1,0 +1,19 @@
+{
+  "name": "JCarrilloSRC - Clock-in-kata",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-mocha --require tsconfig-paths/register test/*.ts"
+  },
+  "keywords": [],
+  "author": "jcarrillosrc",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^20.9.0",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.2.2"
+  }
+}
