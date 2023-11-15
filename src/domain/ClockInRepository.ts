@@ -1,3 +1,5 @@
+import {GpsPosition} from "@/domain/GpsPosition";
+
 export interface ClockInRepository {
-    invoke(): Promise<void>
+    invoke(gpsPosition?: GpsPosition): Promise<void>
 }
