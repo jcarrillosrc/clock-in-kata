@@ -64,12 +64,28 @@ describe('time tracking', () => {
     });
 
     context('GPS is required', () => {
-        it.skip('should send clock-in with required GPS data due GPS service is available', () => {
-            assert(false, "Not implemented yet")
+        it('should send clock-in with required GPS data due GPS service is available', () => {
+            const command = new RegisterClockInCommand(true)
+            const handler = new RegisterClockInCommandHandler(
+                new ClockInApiRepository(),
+                new GpsApiRepository()
+            )
+
+            return handler.invoke(command).should.be.fulfilled
         });
 
-        it.skip('should reject operation due GPS service is not available', () => {
-            assert(false, "Not implemented yet")
+        it('should reject operation due GPS service is not available', () => {
+            const gpsApiRepository = new GpsApiRepository()
+            const gpsApiRepositoryStub = stubObject<GpsRepository>(gpsApiRepository)
+            gpsApiRepositoryStub.invoke.returns(Promise.reject())
+
+            const command = new RegisterClockInCommand(true)
+            const handler = new RegisterClockInCommandHandler(
+                new ClockInApiRepository(),
+                gpsApiRepositoryStub
+            )
+
+            return handler.invoke(command).should.be.rejected
         });
 
         it.skip('should send clock-in with required GPS data after few rejected GPS service calls', () => {
