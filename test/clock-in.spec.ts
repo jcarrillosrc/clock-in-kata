@@ -8,6 +8,7 @@ import {ClockInRepository} from "@/domain/ClockInRepository";
 import {stubObject} from "ts-sinon";
 import {GpsApiRepository} from "@/infrastructure/GpsApiRepository";
 import {GpsRepository} from "@/domain/GpsRepository";
+import {TestGpsApiRepository} from "./TestGpsApiRepository";
 
 chai.use(chaiAsPromised);
 chai.should()
@@ -88,12 +89,36 @@ describe('time tracking', () => {
             return handler.invoke(command).should.be.rejected
         });
 
-        it.skip('should send clock-in with required GPS data after few rejected GPS service calls', () => {
-            assert(false, "Not implemented yet")
+        it('should send clock-in with required GPS data after few rejected GPS service calls', () => {
+            const gpsApiRepository = new TestGpsApiRepository(3)
+            const gpsApiRepositoryStub = stubObject<TestGpsApiRepository>(gpsApiRepository, ["requestData"])
+            gpsApiRepositoryStub.requestData.onCall(0).returns(Promise.reject(new Error("Not available on first try")))
+            gpsApiRepositoryStub.requestData.onCall(1).returns(Promise.reject(new Error("Not available on second try")))
+            gpsApiRepositoryStub.requestData.onCall(2).returns(Promise.resolve({lat: "0.1234", lng: "-1.4321"}))
+
+            const command = new RegisterClockInCommand(true)
+            const handler = new RegisterClockInCommandHandler(
+                new ClockInApiRepository(),
+                gpsApiRepositoryStub
+            )
+
+            return handler.invoke(command).should.be.fulfilled
         });
 
-        it.skip('should reject operation due GPS is not available after 3 retries', () => {
-            assert(false, "Not implemented yet")
+        it('should reject operation due GPS is not available after few retries', () => {
+            const gpsApiRepository = new TestGpsApiRepository(3)
+            const gpsApiRepositoryStub = stubObject<TestGpsApiRepository>(gpsApiRepository, ["requestData"])
+            gpsApiRepositoryStub.requestData.onCall(0).returns(Promise.reject(new Error("Not available on first try")))
+            gpsApiRepositoryStub.requestData.onCall(1).returns(Promise.reject(new Error("Not available on second try")))
+            gpsApiRepositoryStub.requestData.onCall(2).returns(Promise.reject(new Error("Not available on second try")))
+
+            const command = new RegisterClockInCommand(true)
+            const handler = new RegisterClockInCommandHandler(
+                new ClockInApiRepository(),
+                gpsApiRepositoryStub
+            )
+
+            return handler.invoke(command).should.be.rejected
         });
     });
 });
