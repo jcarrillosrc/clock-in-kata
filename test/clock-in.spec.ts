@@ -1,13 +1,37 @@
 import assert from 'assert';
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import {RegisterClockInCommandHandler} from "@/application/RegisterClockInCommandHandler";
+import {ClockInApiRepository} from "@/infrastructure/ClockInApiRepository";
+import {RegisterClockInCommand} from "@/application/RegisterClockInCommand";
+import {ClockInRepository} from "@/domain/ClockInRepository";
+import {stubObject} from "ts-sinon";
+
+chai.use(chaiAsPromised);
+chai.should()
 
 describe('time tracking', () => {
     context('Simple clock-in', () => {
-        it.skip('should send clock-in data successfully', () => {
-            assert(false, "Not implemented yet")
+        it('should send clock-in data successfully', () => {
+            const command = new RegisterClockInCommand()
+            const handler = new RegisterClockInCommandHandler(
+                new ClockInApiRepository()
+            )
+
+            return handler.invoke(command).should.be.fulfilled
         });
 
-        it.skip('should reject operation due async operation fails', () => {
-            assert(false, "Not implemented yet")
+        it('should reject operation due async operation fails', () => {
+            const clockInRepository = new ClockInApiRepository()
+            const clockInRepositoryStub = stubObject<ClockInRepository>(clockInRepository)
+            clockInRepositoryStub.invoke.returns(Promise.reject())
+
+            const command = new RegisterClockInCommand()
+            const handler = new RegisterClockInCommandHandler(
+                clockInRepositoryStub
+            )
+
+            return handler.invoke(command).should.be.rejected
         });
     })
 
